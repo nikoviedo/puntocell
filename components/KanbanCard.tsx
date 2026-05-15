@@ -83,7 +83,7 @@ export function KanbanCard({ pedido, overlay }: Props) {
               </DialogTitle>
             </DialogHeader>
             <div className="space-y-4 text-sm">
-              <Field label="Cliente" value={pedido.cliente_nombre} sub={pedido.cliente_telefono} />
+              <Field label="Cliente" value={pedido.cliente_nombre} sub={pedido.cliente_telefono ?? undefined} />
               <Field label="Equipo" value={pedido.equipo} />
               <Field label="Problema" value={pedido.problema} multiline />
               <div className="grid grid-cols-2 gap-3">

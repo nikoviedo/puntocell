@@ -1,26 +1,36 @@
 import { notFound } from 'next/navigation';
-import type { Pedido, CambioEstado } from '@/types';
+import { createAnonClient } from '@/lib/supabase/anon';
+import type { Database, EstadoPedido } from '@/types/database.types';
 import { ESTADO_COLORES, ESTADO_DOT, ESTADO_LABELS } from '@/lib/utils/estados';
 import { formatFecha, tiempoTranscurrido } from '@/lib/utils/tiempo';
+
+type Pedido = Database['public']['Tables']['pedidos']['Row'];
+type Cambio = {
+  id: string;
+  pedido_id: string;
+  estado_anterior: EstadoPedido | null;
+  estado_nuevo: EstadoPedido;
+  usuario_nombre: string | null;
+  fecha_cambio: string;
+};
 
 interface Props {
   params: { token: string };
 }
 
-async function getPedido(token: string): Promise<{ pedido: Pedido; cambios: CambioEstado[] } | null> {
-  try {
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
-    const res = await fetch(`${baseUrl}/api/pedidos/token/${token}`, { cache: 'no-store' });
-    if (!res.ok) return null;
-    return res.json();
-  } catch {
-    return null;
-  }
+export const dynamic = 'force-dynamic';
+
+async function getPedido(token: string): Promise<{ pedido: Pedido; cambios: Cambio[] } | null> {
+  const supabase = createAnonClient();
+  const { data, error } = await supabase.rpc('get_pedido_publico', { p_token: token });
+  if (error || !data) return null;
+  const result = data as unknown as { pedido: Pedido; cambios: Cambio[] } | null;
+  if (!result?.pedido) return null;
+  return result;
 }
 
 export default async function VistaPublicaPage({ params }: Props) {
   const data = await getPedido(params.token);
-
   if (!data) return notFound();
 
   const { pedido, cambios } = data;
@@ -75,7 +85,7 @@ export default async function VistaPublicaPage({ params }: Props) {
                     Pasó a <span className="font-medium">{ESTADO_LABELS[c.estado_nuevo]}</span>
                   </p>
                   <p className="text-muted-foreground mt-0.5">
-                    Hace {tiempoTranscurrido(c.fecha_cambio)} · por {c.usuario_nombre}
+                    Hace {tiempoTranscurrido(c.fecha_cambio)} · por {c.usuario_nombre ?? 'Sistema'}
                   </p>
                 </li>
               ))}

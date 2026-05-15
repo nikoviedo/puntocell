@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { login, saveSession } from '@/lib/auth';
+import { signIn } from '@/lib/auth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -19,14 +19,14 @@ export default function LoginPage() {
     setLoading(true);
     setError('');
 
-    const usuario = login(email, password);
-    if (usuario) {
-      saveSession(usuario);
+    const { user, error: err } = await signIn(email, password);
+    if (user) {
       router.push('/dashboard');
+      router.refresh();
     } else {
-      setError('Email o contraseña incorrectos');
+      setError(err ?? 'Email o contraseña incorrectos');
+      setLoading(false);
     }
-    setLoading(false);
   }
 
   return (
@@ -54,7 +54,7 @@ export default function LoginPage() {
               <Input
                 id="email"
                 type="email"
-                placeholder="usuario@localhost"
+                placeholder="usuario@dominio.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -86,12 +86,12 @@ export default function LoginPage() {
 
         <div className="rise rise-3 rounded-2xl bg-white/[0.025] backdrop-blur-lg ring-1 ring-white/[0.06] p-4">
           <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground/80 mb-2">
-            Usuarios de prueba
+            Usuarios de prueba (después del seed)
           </p>
           <div className="space-y-1 text-xs font-mono text-muted-foreground">
-            <p><span className="text-foreground/90">admin@localhost</span> · 123456 · <span className="text-violet-300">admin</span></p>
-            <p><span className="text-foreground/90">tecnico@localhost</span> · 123456 · <span className="text-cyan-300">técnico</span></p>
-            <p><span className="text-foreground/90">recepcion@localhost</span> · 123456 · <span className="text-emerald-300">recepción</span></p>
+            <p><span className="text-foreground/90">admin@localhost</span> · puntocell123 · <span className="text-violet-300">admin</span></p>
+            <p><span className="text-foreground/90">tecnico@localhost</span> · puntocell123 · <span className="text-cyan-300">técnico</span></p>
+            <p><span className="text-foreground/90">recepcion@localhost</span> · puntocell123 · <span className="text-emerald-300">recepción</span></p>
           </div>
         </div>
       </div>

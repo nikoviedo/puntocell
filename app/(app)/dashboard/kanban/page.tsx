@@ -11,13 +11,16 @@ import {
   useSensor,
   useSensors,
 } from '@dnd-kit/core';
-import type { Pedido, EstadoPedido } from '@/types';
+import { createClient } from '@/lib/supabase/client';
+import type { Database, EstadoPedido } from '@/types/database.types';
 import { ESTADOS_ORDEN } from '@/lib/utils/estados';
-import { getCurrentUser } from '@/lib/auth';
 import { KanbanCard } from '@/components/KanbanCard';
 import { KanbanColumn } from '@/components/KanbanColumn';
 
+type Pedido = Database['public']['Tables']['pedidos']['Row'];
+
 export default function KanbanPage() {
+  const supabase = createClient();
   const [pedidos, setPedidos] = useState<Pedido[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeId, setActiveId] = useState<string | null>(null);
@@ -26,10 +29,49 @@ export default function KanbanPage() {
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }));
 
   useEffect(() => {
-    fetch('/api/pedidos')
-      .then((r) => r.json())
-      .then((data) => { setPedidos(data); setLoading(false); });
-  }, []);
+    let mounted = true;
+
+    async function load() {
+      const { data } = await supabase
+        .from('pedidos')
+        .select('*')
+        .order('fecha_actualizacion', { ascending: false });
+      if (mounted && data) {
+        setPedidos(data);
+        setLoading(false);
+      }
+    }
+    load();
+
+    const channel = supabase
+      .channel('pedidos-realtime')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'pedidos' },
+        (payload) => {
+          setPedidos((prev) => {
+            if (payload.eventType === 'INSERT') {
+              return [payload.new as Pedido, ...prev];
+            }
+            if (payload.eventType === 'UPDATE') {
+              return prev.map((p) =>
+                p.id === (payload.new as Pedido).id ? (payload.new as Pedido) : p,
+              );
+            }
+            if (payload.eventType === 'DELETE') {
+              return prev.filter((p) => p.id !== (payload.old as Pedido).id);
+            }
+            return prev;
+          });
+        },
+      )
+      .subscribe();
+
+    return () => {
+      mounted = false;
+      supabase.removeChannel(channel);
+    };
+  }, [supabase]);
 
   function getPedidosByEstado(estado: EstadoPedido) {
     return pedidos.filter((p) => p.estado === estado);
@@ -71,21 +113,22 @@ export default function KanbanPage() {
     const pedido = pedidos.find((p) => p.id === pedidoId);
     if (!pedido || pedido.estado === nuevoEstado) return;
 
-    const usuario = getCurrentUser();
-
     setPedidos((prev) =>
       prev.map((p) =>
         p.id === pedidoId
           ? { ...p, estado: nuevoEstado, fecha_actualizacion: new Date().toISOString() }
-          : p
-      )
+          : p,
+      ),
     );
 
-    await fetch(`/api/pedidos/${pedidoId}/estado`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ estado: nuevoEstado, usuario_id: usuario?.id || '1', usuario_nombre: usuario?.nombre || 'Sistema' }),
-    });
+    const { error } = await supabase
+      .from('pedidos')
+      .update({ estado: nuevoEstado })
+      .eq('id', pedidoId);
+
+    if (error) {
+      setPedidos((prev) => prev.map((p) => (p.id === pedidoId ? pedido : p)));
+    }
   }
 
   const activePedido = pedidos.find((p) => p.id === activeId);
@@ -107,11 +150,11 @@ export default function KanbanPage() {
     <div className="space-y-6">
       <div className="rise rise-1">
         <div className="text-[11px] uppercase tracking-[0.25em] text-muted-foreground mb-2">
-          Flujo de trabajo
+          Flujo de trabajo · sincronizado en vivo
         </div>
         <h1 className="font-display text-4xl tracking-tight">Tablero</h1>
         <p className="text-sm text-muted-foreground mt-2 max-w-md">
-          Arrastrá las tarjetas entre columnas para actualizar el estado de cada reparación.
+          Arrastrá las tarjetas entre columnas para actualizar el estado. Los cambios se ven en tiempo real para todo el equipo.
         </p>
       </div>
 

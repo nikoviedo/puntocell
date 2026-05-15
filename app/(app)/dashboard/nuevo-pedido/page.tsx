@@ -3,16 +3,19 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { QRCodeSVG } from 'qrcode.react';
-import { getCurrentUser } from '@/lib/auth';
+import { createClient } from '@/lib/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import type { Pedido } from '@/types';
+import type { Database } from '@/types/database.types';
+
+type Pedido = Database['public']['Tables']['pedidos']['Row'];
 
 export default function NuevoPedidoPage() {
   const router = useRouter();
+  const supabase = createClient();
   const [form, setForm] = useState({
     cliente_nombre: '',
     cliente_telefono: '',
@@ -22,6 +25,7 @@ export default function NuevoPedidoPage() {
   });
   const [loading, setLoading] = useState(false);
   const [pedidoCreado, setPedidoCreado] = useState<Pedido | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) {
@@ -31,17 +35,27 @@ export default function NuevoPedidoPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
+    setError(null);
 
-    const usuario = getCurrentUser();
-    const res = await fetch('/api/pedidos', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ...form, usuario_id: usuario?.id || '1' }),
-    });
+    const { data: { user } } = await supabase.auth.getUser();
 
-    if (res.ok) {
-      const pedido = await res.json();
-      setPedidoCreado(pedido);
+    const { data, error: err } = await supabase
+      .from('pedidos')
+      .insert({
+        cliente_nombre: form.cliente_nombre,
+        cliente_telefono: form.cliente_telefono || null,
+        equipo: form.equipo,
+        problema: form.problema,
+        tiempo_estimado: form.tiempo_estimado || null,
+        creado_por: user?.id ?? null,
+      })
+      .select()
+      .single();
+
+    if (err) {
+      setError(err.message);
+    } else if (data) {
+      setPedidoCreado(data);
     }
     setLoading(false);
   }
@@ -142,6 +156,12 @@ export default function NuevoPedidoPage() {
           />
         </div>
 
+        {error && (
+          <p className="text-xs text-rose-300 bg-rose-500/10 ring-1 ring-rose-400/30 rounded-lg px-3 py-2">
+            {error}
+          </p>
+        )}
+
         <div className="flex flex-col-reverse sm:flex-row gap-3 pt-2">
           <Button
             type="button"
@@ -162,6 +182,7 @@ export default function NuevoPedidoPage() {
         onOpenChange={() => {
           setPedidoCreado(null);
           router.push('/dashboard');
+          router.refresh();
         }}
       >
         <DialogContent className="max-w-sm">
@@ -202,6 +223,7 @@ export default function NuevoPedidoPage() {
                   onClick={() => {
                     setPedidoCreado(null);
                     router.push('/dashboard');
+                    router.refresh();
                   }}
                 >
                   Cerrar

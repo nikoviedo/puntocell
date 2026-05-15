@@ -1,40 +1,10 @@
-export type EstadoPedido =
-  | 'Recibido'
-  | 'Diagnosticando'
-  | 'EsperandoRepuesto'
-  | 'EnReparacion'
-  | 'ListoParaRetirar'
-  | 'Entregado'
-  | 'Cancelado';
+// Re-export desde el schema generado de Supabase para que el resto del código
+// siga importando `@/types` sin cambios.
 
-export interface Pedido {
-  id: string;
-  token_publico: string;
-  cliente_nombre: string;
-  cliente_telefono: string;
-  equipo: string;
-  problema: string;
-  tiempo_estimado: string;
-  estado: EstadoPedido;
-  fecha_ingreso: string;
-  fecha_actualizacion: string;
-  usuario_id: string;
-}
+export type { EstadoPedido, Rol, Database } from './database.types';
 
-export interface Usuario {
-  id: string;
-  email: string;
-  password_hash: string;
-  nombre: string;
-  rol: 'admin' | 'tecnico' | 'recepcionista';
-}
+import type { Database } from './database.types';
 
-export interface CambioEstado {
-  id: string;
-  pedido_id: string;
-  estado_anterior: EstadoPedido;
-  estado_nuevo: EstadoPedido;
-  usuario_id: string;
-  usuario_nombre: string;
-  fecha_cambio: string;
-}
+export type Pedido = Database['public']['Tables']['pedidos']['Row'];
+export type CambioEstado = Database['public']['Tables']['cambios_estado']['Row'];
+export type Profile = Database['public']['Tables']['profiles']['Row'];

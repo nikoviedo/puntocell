@@ -1,47 +1,32 @@
-'use client';
-
-import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import type { Pedido, EstadoPedido } from '@/types';
+import { createClient } from '@/lib/supabase/server';
 import { ESTADO_COLORES, ESTADO_DOT, ESTADO_LABELS, ESTADOS_ORDEN } from '@/lib/utils/estados';
 import { tiempoTranscurrido } from '@/lib/utils/tiempo';
+import type { EstadoPedido } from '@/types/database.types';
 
-export default function DashboardPage() {
-  const [pedidos, setPedidos] = useState<Pedido[]>([]);
-  const [loading, setLoading] = useState(true);
+export const dynamic = 'force-dynamic';
 
-  useEffect(() => {
-    fetch('/api/pedidos')
-      .then((r) => r.json())
-      .then((data) => {
-        setPedidos(data);
-        setLoading(false);
-      });
-  }, []);
+export default async function DashboardPage() {
+  const supabase = createClient();
+  const { data: pedidos } = await supabase
+    .from('pedidos')
+    .select('*')
+    .order('fecha_actualizacion', { ascending: false });
+
+  const lista = pedidos ?? [];
 
   const conteoEstados = ESTADOS_ORDEN.reduce((acc, estado) => {
-    acc[estado] = pedidos.filter((p) => p.estado === estado).length;
+    acc[estado] = lista.filter((p) => p.estado === estado).length;
     return acc;
   }, {} as Record<EstadoPedido, number>);
 
-  const pendientes = pedidos.filter(
-    (p) => p.estado !== 'Entregado' && p.estado !== 'Cancelado'
+  const pendientes = lista.filter(
+    (p) => p.estado !== 'Entregado' && p.estado !== 'Cancelado',
   ).length;
 
-  const listos = pedidos.filter((p) => p.estado === 'ListoParaRetirar').length;
+  const listos = lista.filter((p) => p.estado === 'ListoParaRetirar').length;
 
-  if (loading) {
-    return (
-      <div className="space-y-4">
-        <div className="h-32 rounded-3xl bg-white/[0.03] ring-1 ring-white/[0.06] shimmer" />
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-          {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="h-24 rounded-2xl bg-white/[0.03] ring-1 ring-white/[0.06] shimmer" />
-          ))}
-        </div>
-      </div>
-    );
-  }
+  const activos = lista.filter((p) => p.estado !== 'Entregado' && p.estado !== 'Cancelado');
 
   return (
     <div className="space-y-8">
@@ -104,34 +89,31 @@ export default function DashboardPage() {
           </Link>
         </div>
         <div className="divide-y divide-white/[0.04]">
-          {pedidos
-            .filter((p) => p.estado !== 'Entregado' && p.estado !== 'Cancelado')
-            .sort((a, b) => new Date(b.fecha_actualizacion).getTime() - new Date(a.fecha_actualizacion).getTime())
-            .map((pedido) => (
-              <div
-                key={pedido.id}
-                className="flex items-center justify-between gap-4 px-6 py-3.5 hover:bg-white/[0.02] transition"
-              >
-                <div className="flex items-center gap-3 min-w-0 flex-1">
-                  <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${ESTADO_DOT[pedido.estado]} shadow-[0_0_10px_2px] shadow-current/40`} />
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-medium text-foreground truncate">
-                        {pedido.cliente_nombre}
-                      </span>
-                      <span className="text-xs text-muted-foreground shrink-0">· {pedido.equipo}</span>
-                    </div>
-                    <div className="text-[11px] text-muted-foreground/80 mt-0.5 font-mono">
-                      #{pedido.token_publico} · actualizado {tiempoTranscurrido(pedido.fecha_actualizacion)}
-                    </div>
+          {activos.map((pedido) => (
+            <div
+              key={pedido.id}
+              className="flex items-center justify-between gap-4 px-6 py-3.5 hover:bg-white/[0.02] transition"
+            >
+              <div className="flex items-center gap-3 min-w-0 flex-1">
+                <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${ESTADO_DOT[pedido.estado]} shadow-[0_0_10px_2px] shadow-current/40`} />
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-medium text-foreground truncate">
+                      {pedido.cliente_nombre}
+                    </span>
+                    <span className="text-xs text-muted-foreground shrink-0">· {pedido.equipo}</span>
+                  </div>
+                  <div className="text-[11px] text-muted-foreground/80 mt-0.5 font-mono">
+                    #{pedido.token_publico} · actualizado {tiempoTranscurrido(pedido.fecha_actualizacion)}
                   </div>
                 </div>
-                <span className={`text-[10px] font-medium uppercase tracking-widest rounded-full px-2.5 py-1 shrink-0 ${ESTADO_COLORES[pedido.estado]}`}>
-                  {ESTADO_LABELS[pedido.estado]}
-                </span>
               </div>
-            ))}
-          {pendientes === 0 && (
+              <span className={`text-[10px] font-medium uppercase tracking-widest rounded-full px-2.5 py-1 shrink-0 ${ESTADO_COLORES[pedido.estado]}`}>
+                {ESTADO_LABELS[pedido.estado]}
+              </span>
+            </div>
+          ))}
+          {activos.length === 0 && (
             <div className="px-6 py-10 text-center text-sm text-muted-foreground">
               No hay reparaciones activas. Creá un pedido nuevo para empezar.
             </div>
