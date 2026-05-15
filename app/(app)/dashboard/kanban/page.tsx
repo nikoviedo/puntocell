@@ -35,7 +35,6 @@ export default function KanbanPage() {
     return pedidos.filter((p) => p.estado === estado);
   }
 
-  // La columna debe resaltarse si el cursor está sobre ella O sobre cualquier tarjeta dentro de ella
   function getColumnIsDragOver(estado: EstadoPedido): boolean {
     if (!overId || !activeId) return false;
     if (overId === estado) return true;
@@ -60,12 +59,10 @@ export default function KanbanPage() {
     const pedidoId = active.id as string;
     const overedId = over.id as string;
 
-    // Determinar el nuevo estado: puede ser el id de la columna o el id de una tarjeta
     let nuevoEstado: EstadoPedido;
     if (ESTADOS_ORDEN.includes(overedId as EstadoPedido)) {
       nuevoEstado = overedId as EstadoPedido;
     } else {
-      // Cayó encima de una tarjeta — usar la columna de esa tarjeta
       const overPedido = pedidos.find((p) => p.id === overedId);
       if (!overPedido) return;
       nuevoEstado = overPedido.estado;
@@ -76,7 +73,6 @@ export default function KanbanPage() {
 
     const usuario = getCurrentUser();
 
-    // Optimistic update
     setPedidos((prev) =>
       prev.map((p) =>
         p.id === pedidoId
@@ -85,7 +81,6 @@ export default function KanbanPage() {
       )
     );
 
-    // Persist
     await fetch(`/api/pedidos/${pedidoId}/estado`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
@@ -95,25 +90,46 @@ export default function KanbanPage() {
 
   const activePedido = pedidos.find((p) => p.id === activeId);
 
-  if (loading) return <div className="text-gray-500">Cargando...</div>;
+  if (loading) {
+    return (
+      <div className="space-y-4">
+        <div className="h-10 w-48 rounded-xl bg-white/[0.03] ring-1 ring-white/[0.06] shimmer" />
+        <div className="flex gap-3">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className="w-64 h-96 rounded-2xl bg-white/[0.03] ring-1 ring-white/[0.06] shimmer" />
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="space-y-4">
-      <h1 className="text-xl font-bold text-gray-900">Tablero Kanban</h1>
-      <div className="flex gap-3 overflow-x-auto pb-4">
+    <div className="space-y-6">
+      <div className="rise rise-1">
+        <div className="text-[11px] uppercase tracking-[0.25em] text-muted-foreground mb-2">
+          Flujo de trabajo
+        </div>
+        <h1 className="font-display text-4xl tracking-tight">Tablero</h1>
+        <p className="text-sm text-muted-foreground mt-2 max-w-md">
+          Arrastrá las tarjetas entre columnas para actualizar el estado de cada reparación.
+        </p>
+      </div>
+
+      <div className="flex gap-3 overflow-x-auto pb-4 -mx-4 sm:-mx-8 px-4 sm:px-8">
         <DndContext
           sensors={sensors}
           onDragStart={handleDragStart}
           onDragOver={handleDragOver}
           onDragEnd={handleDragEnd}
         >
-          {ESTADOS_ORDEN.map((estado) => (
-            <KanbanColumn
-              key={estado}
-              estado={estado}
-              pedidos={getPedidosByEstado(estado)}
-              isDragOver={getColumnIsDragOver(estado)}
-            />
+          {ESTADOS_ORDEN.map((estado, i) => (
+            <div key={estado} className={`rise rise-${(i % 6) + 1}`}>
+              <KanbanColumn
+                estado={estado}
+                pedidos={getPedidosByEstado(estado)}
+                isDragOver={getColumnIsDragOver(estado)}
+              />
+            </div>
           ))}
           <DragOverlay>
             {activePedido && <KanbanCard pedido={activePedido} overlay />}
