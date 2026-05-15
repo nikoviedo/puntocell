@@ -99,6 +99,20 @@
   animation: shimmer 1.6s linear infinite;
 }
 
+/* Kanban escape: ocupa el ancho disponible (viewport menos sidebar) ignorando
+   el max-w-7xl mx-auto del shell. */
+.kanban-bleed {
+  width: 100vw;
+  margin-left: -1rem;
+  max-width: none;
+}
+@media (min-width: 640px) {
+  .kanban-bleed {
+    width: calc(100vw - 15rem);
+    margin-left: min(-2rem, calc(45.5rem - 50vw));
+  }
+}
+
 /* Fondo aurora estático en su propia capa fija (no repaint en scroll) */
 .aurora-bg {
   position: fixed;

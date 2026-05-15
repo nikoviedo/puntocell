@@ -139,7 +139,7 @@ export default function KanbanPage() {
         <div className="h-10 w-48 rounded-xl bg-white/[0.03] ring-1 ring-white/[0.06] shimmer" />
         <div className="flex gap-3">
           {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="w-64 h-96 rounded-2xl bg-white/[0.03] ring-1 ring-white/[0.06] shimmer" />
+            <div key={i} className="shrink-0 w-64 h-96 rounded-2xl bg-white/[0.03] ring-1 ring-white/[0.06] shimmer" />
           ))}
         </div>
       </div>
@@ -158,7 +158,7 @@ export default function KanbanPage() {
         </p>
       </div>
 
-      <div className="flex gap-3 overflow-x-auto pb-4 -mx-4 sm:-mx-8 px-4 sm:px-8">
+      <div className="kanban-bleed flex gap-3 overflow-x-auto pb-4 px-4 sm:px-8">
         <DndContext
           sensors={sensors}
           onDragStart={handleDragStart}
@@ -166,7 +166,7 @@ export default function KanbanPage() {
           onDragEnd={handleDragEnd}
         >
           {ESTADOS_ORDEN.map((estado, i) => (
-            <div key={estado} className={`rise rise-${(i % 6) + 1}`}>
+            <div key={estado} className={`shrink-0 rise rise-${(i % 6) + 1}`}>
               <KanbanColumn
                 estado={estado}
                 pedidos={getPedidosByEstado(estado)}

@@ -16,7 +16,7 @@ export function KanbanColumn({ estado, pedidos, isDragOver }: Props) {
   const { setNodeRef } = useDroppable({ id: estado });
 
   return (
-    <div className="flex-shrink-0 w-72">
+    <div className="flex-shrink-0 w-64">
       <div className={`relative overflow-hidden rounded-t-2xl px-4 py-3 bg-gradient-to-br ${ESTADO_HEADER_COLORES[estado]} ring-1 ring-white/10 border-b border-white/[0.06]`}>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">

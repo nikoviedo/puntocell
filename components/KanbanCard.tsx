@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import { QRCodeSVG } from 'qrcode.react';
 import type { Pedido } from '@/types';
 import { tiempoTranscurrido } from '@/lib/utils/tiempo';
 import { ESTADO_DOT, ESTADO_LABELS } from '@/lib/utils/estados';
@@ -25,6 +26,8 @@ export function KanbanCard({ pedido, overlay }: Props) {
     id: pedido.id,
   });
   const [open, setOpen] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const [showQR, setShowQR] = useState(false);
   const wasDragging = useRef(false);
 
   useEffect(() => {
@@ -38,6 +41,17 @@ export function KanbanCard({ pedido, overlay }: Props) {
       return;
     }
     setOpen(true);
+  }
+
+  const urlPublica =
+    typeof window !== 'undefined'
+      ? `${window.location.origin}/r/${pedido.token_publico}`
+      : `/r/${pedido.token_publico}`;
+
+  function copiar() {
+    navigator.clipboard.writeText(urlPublica);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   }
 
   const style = {
@@ -72,7 +86,13 @@ export function KanbanCard({ pedido, overlay }: Props) {
       </div>
 
       {!overlay && (
-        <Dialog open={open} onOpenChange={setOpen}>
+        <Dialog
+          open={open}
+          onOpenChange={(o) => {
+            setOpen(o);
+            if (!o) setShowQR(false);
+          }}
+        >
           <DialogContent className="max-w-md">
             <DialogHeader>
               <DialogTitle>
@@ -82,6 +102,7 @@ export function KanbanCard({ pedido, overlay }: Props) {
                 </div>
               </DialogTitle>
             </DialogHeader>
+
             <div className="space-y-4 text-sm">
               <Field label="Cliente" value={pedido.cliente_nombre} sub={pedido.cliente_telefono ?? undefined} />
               <Field label="Equipo" value={pedido.equipo} />
@@ -92,7 +113,40 @@ export function KanbanCard({ pedido, overlay }: Props) {
                 <Field label="Ingreso" value={new Date(pedido.fecha_ingreso).toLocaleDateString('es-AR')} />
                 <Field label="Actualizado" value={tiempoTranscurrido(pedido.fecha_actualizacion)} />
               </div>
+
+              <div className="space-y-2 pt-1">
+                <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-[0.2em]">
+                  URL pública para el cliente
+                </p>
+                <div className="rounded-lg bg-white/[0.04] ring-1 ring-white/10 px-3 py-2 font-mono text-[11px] text-foreground/90 break-all">
+                  {urlPublica}
+                </div>
+                <div className="grid grid-cols-3 gap-2">
+                  <Button variant="outline" size="sm" onClick={copiar} type="button">
+                    {copied ? '✓ Copiado' : 'Copiar'}
+                  </Button>
+                  <Button asChild variant="outline" size="sm">
+                    <a href={urlPublica} target="_blank" rel="noreferrer">Abrir</a>
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    type="button"
+                    onClick={() => setShowQR((s) => !s)}
+                  >
+                    {showQR ? 'Ocultar QR' : 'Ver QR'}
+                  </Button>
+                </div>
+                {showQR && (
+                  <div className="flex justify-center pt-2">
+                    <div className="p-3 rounded-xl bg-white">
+                      <QRCodeSVG value={urlPublica} size={150} />
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
+
             <div className="flex justify-end pt-2">
               <DialogClose asChild>
                 <Button variant="outline" size="sm">Cerrar</Button>
