@@ -95,8 +95,10 @@ create trigger pedidos_set_token
 before insert on public.pedidos
 for each row execute function public.set_token_publico();
 
+-- security definer: la tabla cambios_estado tiene RLS y sólo se escribe
+-- desde este trigger; bypass RLS para que UPDATE de pedidos no rebote.
 create or replace function public.log_cambio_estado() returns trigger
-language plpgsql as $$
+language plpgsql security definer set search_path = public as $$
 declare
   v_nombre text;
 begin
