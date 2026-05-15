@@ -47,7 +47,7 @@ export default async function VistaPublicaPage({ params }: Props) {
           <p className="text-xs font-mono text-muted-foreground">#{pedido.token_publico}</p>
         </div>
 
-        <div className="rise rise-2 relative overflow-hidden rounded-3xl bg-white/[0.04] backdrop-blur-2xl ring-1 ring-white/10 shadow-glass p-6">
+        <div className="rise rise-2 relative overflow-hidden rounded-3xl bg-white/[0.04] backdrop-blur-md ring-1 ring-white/10 shadow-glass p-6">
           <div className="absolute -top-20 -right-20 w-60 h-60 rounded-full bg-violet-500/20 blur-3xl pointer-events-none" />
           <p className="relative text-[10px] uppercase tracking-[0.25em] text-muted-foreground mb-3">
             Estado actual
@@ -63,7 +63,7 @@ export default async function VistaPublicaPage({ params }: Props) {
           </span>
         </div>
 
-        <div className="rise rise-3 rounded-2xl bg-white/[0.04] backdrop-blur-xl ring-1 ring-white/10 divide-y divide-white/[0.06]">
+        <div className="rise rise-3 rounded-2xl bg-white/[0.04] backdrop-blur-md ring-1 ring-white/10 divide-y divide-white/[0.06]">
           <Row label="Cliente" value={pedido.cliente_nombre} />
           <Row label="Equipo" value={pedido.equipo} />
           <Row label="Problema" value={pedido.problema} multiline />
@@ -72,7 +72,7 @@ export default async function VistaPublicaPage({ params }: Props) {
         </div>
 
         {cambios.length > 0 && (
-          <div className="rise rise-4 rounded-2xl bg-white/[0.04] backdrop-blur-xl ring-1 ring-white/10 p-5">
+          <div className="rise rise-4 rounded-2xl bg-white/[0.04] backdrop-blur-md ring-1 ring-white/10 p-5">
             <h2 className="text-[10px] uppercase tracking-[0.25em] text-muted-foreground mb-4">
               Historial
             </h2>

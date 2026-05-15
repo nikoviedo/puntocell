@@ -45,7 +45,7 @@ export default function LoginPage() {
           </p>
         </div>
 
-        <div className="rise rise-2 rounded-3xl bg-white/[0.04] backdrop-blur-2xl ring-1 ring-white/10 shadow-glass p-6 sm:p-8 space-y-5">
+        <div className="rise rise-2 rounded-3xl bg-white/[0.04] backdrop-blur-md ring-1 ring-white/10 shadow-glass p-6 sm:p-8 space-y-5">
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-1.5">
               <Label htmlFor="email" className="text-xs uppercase tracking-widest text-muted-foreground">
@@ -84,7 +84,7 @@ export default function LoginPage() {
           </form>
         </div>
 
-        <div className="rise rise-3 rounded-2xl bg-white/[0.025] backdrop-blur-lg ring-1 ring-white/[0.06] p-4">
+        <div className="rise rise-3 rounded-2xl bg-white/[0.025] backdrop-blur-sm ring-1 ring-white/[0.06] p-4">
           <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground/80 mb-2">
             Usuarios de prueba (después del seed)
           </p>

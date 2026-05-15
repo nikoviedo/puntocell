@@ -9,7 +9,7 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default:
-          "btn-aurora text-white font-semibold hover:translate-y-[-1px] active:translate-y-[0px]",
+          "btn-aurora text-white font-semibold",
         destructive:
           "bg-destructive/90 text-destructive-foreground hover:bg-destructive ring-1 ring-destructive/40",
         outline:

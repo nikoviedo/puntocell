@@ -84,7 +84,7 @@ export default function NuevoPedidoPage() {
 
       <form
         onSubmit={handleSubmit}
-        className="rise rise-2 rounded-3xl bg-white/[0.04] backdrop-blur-2xl ring-1 ring-white/10 shadow-glass p-6 sm:p-8 space-y-5"
+        className="rise rise-2 rounded-3xl bg-white/[0.04] backdrop-blur-md ring-1 ring-white/10 shadow-glass p-6 sm:p-8 space-y-5"
       >
         <div className="grid sm:grid-cols-2 gap-4">
           <div className="space-y-1.5">

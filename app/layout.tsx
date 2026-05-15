@@ -34,6 +34,7 @@ export default function RootLayout({
   return (
     <html lang="es" className={`${sans.variable} ${display.variable} ${mono.variable}`}>
       <body className="font-sans antialiased">
+        <div aria-hidden className="aurora-bg" />
         <div className="relative z-10">{children}</div>
       </body>
     </html>

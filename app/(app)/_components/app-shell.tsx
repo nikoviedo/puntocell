@@ -29,7 +29,7 @@ export default function AppShell({ profile, children }: Props) {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <header className="sticky top-0 z-40 backdrop-blur-xl bg-background/40 ring-1 ring-white/[0.06]">
+      <header className="sticky top-0 z-40 bg-background/90 ring-1 ring-white/[0.06]">
         <div className="flex items-center justify-between px-4 sm:px-6 py-3">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-xl btn-aurora grid place-items-center text-white text-sm font-bold">
@@ -83,7 +83,7 @@ export default function AppShell({ profile, children }: Props) {
           })}
         </nav>
 
-        <div className="sm:hidden fixed bottom-3 left-3 right-3 z-50 rounded-2xl bg-background/70 backdrop-blur-xl ring-1 ring-white/10 shadow-glass flex">
+        <div className="sm:hidden fixed bottom-3 left-3 right-3 z-50 rounded-2xl bg-background/70 backdrop-blur-md ring-1 ring-white/10 shadow-glass flex">
           {navLinks.map((link) => {
             const active = pathname === link.href;
             return (

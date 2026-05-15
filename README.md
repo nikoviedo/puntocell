@@ -16,7 +16,22 @@ Sistema de gestión de reparaciones con Next.js 14, TypeScript, Tailwind y Supab
 En tu Supabase Studio (`http://<tu-vps>:8000` o el dominio que uses), abrí **SQL Editor** y ejecutá en orden:
 
 1. `supabase/migrations/0001_init.sql` — crea tablas, RLS, triggers, función pública por token.
-2. `supabase/seed.sql` — crea usuarios de prueba y un pedido demo.
+2. `supabase/seed.sql` — inserta un pedido demo.
+
+### 1.b Crear usuarios de prueba
+
+GoTrue rompe si se insertan usuarios directo en `auth.users` (deja columnas NULL).
+Usar uno de los dos métodos:
+
+**A) Script con la API admin** (recomendado, desde tu máquina o el VPS):
+
+```bash
+SUPABASE_URL=http://<tu-vps>:8000 \
+SERVICE_ROLE_KEY=<service_role_key> \
+./supabase/seed-users.sh
+```
+
+**B) Manual desde Studio** → Authentication → Users → Add user. Marcar **Auto Confirm User** y agregar metadata `{"nombre":"Admin","rol":"admin"}`.
 
 ### 2. Variables de entorno
 

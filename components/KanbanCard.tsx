@@ -53,7 +53,7 @@ export function KanbanCard({ pedido, overlay }: Props) {
         {...attributes}
         {...listeners}
         onClick={handleClick}
-        className={`group relative rounded-xl bg-white/[0.05] backdrop-blur-lg ring-1 ring-white/10 hover:ring-white/20 hover:bg-white/[0.07] p-3 cursor-pointer select-none transition-all ${
+        className={`group relative rounded-xl bg-white/[0.05] backdrop-blur-sm ring-1 ring-white/10 hover:ring-white/20 hover:bg-white/[0.07] p-3 cursor-pointer select-none transition-all ${
           isDragging ? 'opacity-40' : ''
         } ${overlay ? 'shadow-glass ring-white/20 rotate-1 scale-105' : ''}`}
       >
